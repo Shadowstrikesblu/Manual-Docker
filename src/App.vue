@@ -1,15 +1,75 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-const count = ref(0)
+// Vidéo YouTube : https://youtu.be/1xTrYJh4G8U
+const YT_VIDEO_ID = '1xTrYJh4G8U'
+let player = null
+const playerReady = ref(false)
 
-// Chemin de la vidéo (placeholder). Dépose ta vidéo dans public/video.mp4
-// puis remplace cette valeur si besoin. Liée en :src pour éviter la résolution
-// statique de Vite tant que le fichier n'existe pas.
-const videoSrc = ref('/video.mp4')
+// Le temps est-il arrêté ? (référence JoJo : Star Platinum « The World »)
+const timeStopped = ref(false)
 
-function onClick() {
-  count.value++
+// Volume commun (0 à 1)
+const volume = ref(0.7)
+
+// Audios JoJo (dans public/jotaro)
+const audioStop = new Audio('/jotaro/star-platinum-za-warudo.mp3')
+const audioResume = new Audio('/jotaro/Time_resumes.mp3')
+audioStop.volume = volume.value
+audioResume.volume = volume.value
+
+// Charge l'API IFrame de YouTube une seule fois
+function loadYouTubeAPI() {
+  return new Promise((resolve) => {
+    if (window.YT && window.YT.Player) {
+      resolve()
+      return
+    }
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    window.onYouTubeIframeAPIReady = () => resolve()
+    document.head.appendChild(tag)
+  })
+}
+
+onMounted(async () => {
+  await loadYouTubeAPI()
+  player = new window.YT.Player('yt-player', {
+    videoId: YT_VIDEO_ID,
+    playerVars: { rel: 0 },
+    events: {
+      onReady: (e) => {
+        e.target.setVolume(volume.value * 100)
+        playerReady.value = true
+      },
+    },
+  })
+})
+
+function applyVolume() {
+  audioStop.volume = volume.value
+  audioResume.volume = volume.value
+  if (player && playerReady.value) player.setVolume(volume.value * 100)
+}
+
+function playFromStart(audio) {
+  audio.currentTime = 0
+  audio.play().catch(() => {})
+}
+
+function toggleTime() {
+  timeStopped.value = !timeStopped.value
+  if (timeStopped.value) {
+    // Star Platinum « The World » : on stoppe le temps
+    audioResume.pause()
+    playFromStart(audioStop)
+    if (player && playerReady.value) player.pauseVideo()
+  } else {
+    // Time resumes...
+    audioStop.pause()
+    playFromStart(audioResume)
+    if (player && playerReady.value) player.playVideo()
+  }
 }
 </script>
 
@@ -18,17 +78,31 @@ function onClick() {
     <h1>LEEX — Frontend Vue</h1>
     <p class="subtitle">Serveur déployé avec Docker (comparaison avec / sans Terraform)</p>
 
-    <!-- Bouton -->
-    <button class="btn" @click="onClick">
-      Clique-moi ({{ count }})
+    <!-- Bouton à deux états -->
+    <button class="btn" :class="{ stopped: timeStopped }" @click="toggleTime">
+      {{ timeStopped ? 'Time resumes...' : 'Star Platinum : The World' }}
     </button>
 
-    <!-- Vidéo : PLACEHOLDER — remplace le fichier public/video.mp4 par ta vraie vidéo -->
-    <section class="video-zone">
-      <video controls poster="/video-poster.svg" width="640" :src="videoSrc">
-        Ton navigateur ne supporte pas la balise vidéo.
-      </video>
-      <p class="hint">📹 Placeholder vidéo — dépose ta vidéo dans <code>public/video.mp4</code></p>
+    <!-- Contrôle du volume -->
+    <div class="volume">
+      <label for="vol">🔊 Volume</label>
+      <input
+        id="vol"
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        v-model.number="volume"
+        @input="applyVolume"
+      />
+      <span class="vol-val">{{ Math.round(volume * 100) }}%</span>
+    </div>
+
+    <!-- Vidéo YouTube (API IFrame, pilotée par le bouton et le volume) -->
+    <section class="video-zone" :class="{ frozen: timeStopped }">
+      <div class="yt-wrapper">
+        <div id="yt-player"></div>
+      </div>
     </section>
   </main>
 </template>
@@ -57,17 +131,52 @@ function onClick() {
 .btn:hover {
   background: #369870;
 }
+.btn.stopped {
+  background: #d4af37;
+  color: #1a1a1a;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.7);
+}
+.btn.stopped:hover {
+  background: #c39f2f;
+}
+.volume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.volume input[type="range"] {
+  width: 200px;
+  accent-color: #42b883;
+  cursor: pointer;
+}
+.vol-val {
+  min-width: 3rem;
+  text-align: left;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
 .video-zone {
   margin-top: 2.5rem;
+  transition: filter 0.3s;
 }
-.video-zone video {
-  max-width: 100%;
+.video-zone.frozen {
+  filter: sepia(0.6) contrast(1.1) brightness(0.9);
+}
+.yt-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: 8px;
+  overflow: hidden;
   background: #000;
 }
-.hint {
-  color: #888;
-  font-size: 0.9rem;
-  margin-top: 0.75rem;
+.yt-wrapper :deep(iframe) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 </style>
