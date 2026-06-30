@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#1a1a1a"/>
+  <circle cx="320" cy="180" r="50" fill="#42b883" opacity="0.9"/>
+  <polygon points="305,155 305,205 350,180" fill="#ffffff"/>
+  <text x="320" y="280" font-family="system-ui, sans-serif" font-size="22" fill="#cccccc" text-anchor="middle">Vidéo à venir (placeholder)</text>
+</svg>
