@@ -6,7 +6,7 @@ services:
     image: leex-nginx:3.0
     container_name: leex-nginx
     ports:
-      - "8080:80"
+          - "80:80"
     restart: unless-stopped
 
 # docker compose up -d --build   # construire + démarrer
