@@ -1,0 +1,15 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: leex-nginx:3.0
+    container_name: leex-nginx
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+# docker compose up -d --build   # construire + démarrer
+# docker compose ps              # voir l'état
+# docker compose logs -f         # suivre les logs
+# docker compose down            # arrêter + supprimer
