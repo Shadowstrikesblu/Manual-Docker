@@ -1,15 +1,43 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --bg-0: #07070e;
+  --bg-1: #12101f;
+  --purple: #a855f7;
+  --purple-deep: #6d28d9;
+  --gold: #f0c040;
+  --gold-soft: #ffd76e;
+  --text: #e8e8f2;
+  --muted: #9a9ab4;
+
+  font-family: "Segoe UI", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  color: #213547;
-  background-color: #ffffff;
+  color: var(--text);
+  background-color: var(--bg-0);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background:
+    radial-gradient(1000px 600px at 20% -10%, rgba(109, 40, 217, 0.28), transparent 60%),
+    radial-gradient(800px 500px at 90% 110%, rgba(168, 85, 247, 0.18), transparent 60%),
+    linear-gradient(160deg, var(--bg-0), var(--bg-1));
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
 }
 
-h1 {
-  color: #35495e;
+/* Le fond bascule en doré quand le temps est arrêté */
+body.time-stopped {
+  background:
+    radial-gradient(1000px 600px at 20% -10%, rgba(240, 192, 64, 0.25), transparent 60%),
+    radial-gradient(800px 500px at 90% 110%, rgba(240, 192, 64, 0.12), transparent 60%),
+    linear-gradient(160deg, #0d0a05, #1a1408);
+  background-attachment: fixed;
 }
